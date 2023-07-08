@@ -6,7 +6,6 @@ from aiogram.types import Message, CallbackQuery, FSInputFile
 
 import matplotlib.pyplot as plt
 import numpy as np
-import numexpr
 
 import admin_kb
 import kb
@@ -19,8 +18,6 @@ available_statistic_type = ["user_statistic", "new_user_statistic"]
 available_time_measure = ["day", "month", "year"]
 available_time_period = []
 submit_options = ["submit"]
-
-#class SettingTariff(StatesGroup)
 
 
 class CreatingStatistic(StatesGroup):
@@ -73,7 +70,6 @@ async def choose_period_length(callback: CallbackQuery, state: FSMContext):
 @router.message(CreatingStatistic.choosing_time_period)
 async def submit_statistic(message: Message, state: FSMContext):
     await state.update_data(chosen_time_period=message.text)
-    await message.edit_reply_markup()
     user_data = await state.get_data()
     await message.answer(
         text=F"Вы выбрали {user_data['chosen_statistic_type']} за {user_data['chosen_time_period']} {user_data['chosen_time_mesure']}(s)",

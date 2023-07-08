@@ -12,11 +12,12 @@ router = Router()
 
 # Эти значения далее будут подставляться в итоговый текст, отсюда
 # такая на первый взгляд странная форма прилагательных
-available_llm_names = ["ChatGPT", "Claude"]
-available_project_names = ["skip"]
-prompt_options = []
+available_llm_names = [("ChatGPT", "ChatGPT"), ("Claude", "Claude")]
+llm_names = ["ChatGPT", "Claude"]
+available_project_names = [("skip", "skip")]
+prompt_options = [("skip", "skip")]
 file_options = []
-submit_options = ["submit"]
+submit_options = [("submit", "submit")]
 
 
 class CreatingProject(StatesGroup):
@@ -29,28 +30,19 @@ class CreatingProject(StatesGroup):
 
 @router.callback_query(Text("add_project"))
 async def add_project(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_reply_markup()
     await callback.message.answer(
         text="Создаем проект. \n\nВыберите языковую модель:",
-        reply_markup=make_row_keyboard(available_llm_names[.....])
+        reply_markup=make_row_keyboard(available_llm_names) #??????????????????
     )
     # Устанавливаем пользователю состояние "выбирает название"
     await state.set_state(CreatingProject.choosing_llm_name)
 
-"""
-@router.callback_query(Text("cancel"))
-async def cmd_food(callback: CallbackQuery, state: FSMContext):
 
-    # Устанавливаем пользователю состояние "выбирает название"
-    await callback.message.answer("Отмена")
-    await callback.message.answer("Главное меню для вас", reply_markup=main_menu_kb)
-    await state.clear()
-# Этап выбора блюда #
-"""
-
-
-@router.callback_query(CreatingProject.choosing_llm_name, Text(available_llm_names))
+@router.callback_query(CreatingProject.choosing_llm_name, Text(llm_names))
 async def choose_name(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await state.update_data(chosen_llm=callback.data)
+    await callback.message.edit_reply_markup()
     await callback.message.answer(
         text="Спасибо. Теперь, пожалуйста, введите имя проекта",
         reply_markup=make_row_keyboard(available_project_names)
@@ -60,16 +52,18 @@ async def choose_name(callback: CallbackQuery, state: FSMContext, bot: Bot):
 
 @router.message(CreatingProject.choosing_llm_name)
 async def wrong_llm(message: Message):
+    await message.edit_reply_markup()
     await message.answer(
         text="Я не знаю такой языковой модели.\n\n"
              "Пожалуйста, выберите одно из названий из списка ниже:",
-        reply_markup=make_row_keyboard(available_llm_names[.....])
+        reply_markup=make_row_keyboard(available_llm_names) #??????????????????
     )
 
 
 @router.message(CreatingProject.choosing_project_name)
 async def add_prompt(message: Message, state: FSMContext):
     await state.update_data(chosen_project_name=message.text)
+    await message.edit_reply_markup()
     user_data = await state.get_data()
     await message.answer(
         text=f"Вы выбрали имя {user_data['chosen_project_name']} и языковую модель {user_data['chosen_llm']}.\n"
@@ -81,7 +75,8 @@ async def add_prompt(message: Message, state: FSMContext):
 
 @router.callback_query(CreatingProject.choosing_project_name, Text("skip"))
 async def skip_name(callback: CallbackQuery, state: FSMContext):
-    await state.update_data(chosen_project_name=generate(10))
+    await state.update_data(chosen_project_name=generate(size=10))
+    await callback.message.edit_reply_markup()
     user_data = await state.get_data()
     await callback.message.answer(
         text=f"Имя вашего проекта {user_data['chosen_project_name']}, языковая модель {user_data['chosen_llm']}.\n"
@@ -95,10 +90,24 @@ async def skip_name(callback: CallbackQuery, state: FSMContext):
 @router.message(CreatingProject.add_system_prompt)
 async def add_file(message: Message, state: FSMContext):
     await state.update_data(chosen_prompt=message.text)
+   # await message.edit_reply_markup()
     user_data = await state.get_data()
     await message.answer(
         text=f"Ваш промпт: {user_data['chosen_prompt']}.\n"
              f"Добавьте файл",
+        reply_markup=make_row_keyboard(file_options)
+    )
+    # Сброс состояния и сохранённых данных у пользователя
+    await state.set_state(CreatingProject.add_file)
+
+
+@router.callback_query(CreatingProject.add_system_prompt, Text("skip"))
+async def skip_name(callback: CallbackQuery, state: FSMContext):
+    await state.update_data(chosen_prompt="")
+    await callback.message.edit_reply_markup()
+    user_data = await state.get_data()
+    await callback.message.answer(
+        "Добавьте файл",
         reply_markup=make_row_keyboard(file_options)
     )
     # Сброс состояния и сохранённых данных у пользователя
@@ -128,6 +137,7 @@ async def submit_project(msg: Message, bot: Bot, state: FSMContext):
 
 @router.callback_query(CreatingProject.submit_state, Text("submit"))
 async def create_project(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_reply_markup()
     await callback.message.answer(
         text="Проект создан."
     )

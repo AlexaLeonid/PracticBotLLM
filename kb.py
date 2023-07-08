@@ -50,14 +50,14 @@ llm_menu = [
 llm_kb = InlineKeyboardMarkup(inline_keyboard=upgrade_menu)
 
 
-def make_row_keyboard(items: list[str, str]):
+def make_row_keyboard(items: list[tuple[str, str]]):
     """
     Создаёт реплай-клавиатуру с кнопками в один ряд
     :param items: список текстов для кнопок
     :return: объект реплай-клавиатуры
     """
 
-    row = [[InlineKeyboardButton(text=item[0], callback_data=item[2]) for item in items],
+    row = [[InlineKeyboardButton(text=item[0], callback_data=item[1]) for item in items],
            [InlineKeyboardButton(text="cancel", callback_data="cancel")]]
 
     return InlineKeyboardMarkup(inline_keyboard=row, resize_keyboard=True)

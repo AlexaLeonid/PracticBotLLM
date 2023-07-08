@@ -11,10 +11,13 @@ router = Router()
 
 # Эти значения далее будут подставляться в итоговый текст, отсюда
 # такая на первый взгляд странная форма прилагательных
-available_llm_names = ["ChatGPT", "Claude"]
-available_bot_names = ["skip"]
-prompt_options = []
-submit_options = ["submit"]
+
+
+available_llm_names = [("ChatGPT", "ChatGPT"), ("Claude", "Claude")]
+llm_names = ["ChatGPT", "Claude"]
+available_bot_names = [("skip", "skip")]
+prompt_options = [("skip", "skip")]
+submit_options = [("submit", "submit")]
 
 
 class CreatingBot(StatesGroup):
@@ -30,13 +33,13 @@ async def create_bot(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup()
     await callback.message.answer(
         text="Создаем системный бот. \n\nВыберите языковую модель:",
-        reply_markup=make_row_keyboard(available_llm_names[.....])
+        reply_markup=make_row_keyboard(available_llm_names) #??????????????????
     )
     # Устанавливаем пользователю состояние "выбирает название"
     await state.set_state(CreatingBot.choosing_llm_name)
 
 
-@router.callback_query(CreatingBot.choosing_llm_name, Text(available_llm_names))
+@router.callback_query(CreatingBot.choosing_llm_name, Text(llm_names))
 async def choose_llm(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup()
     await state.update_data(chosen_llm=callback.data)
@@ -49,18 +52,16 @@ async def choose_llm(callback: CallbackQuery, state: FSMContext):
 
 @router.message(CreatingBot.choosing_llm_name)
 async def llm_chosen_incorrectly(message: Message):
-    await message.edit_reply_markup()
     await message.answer(
         text="Я не знаю такой языковой модели.\n\n"
              "Пожалуйста, выберите одно из названий из списка ниже:",
-        reply_markup=make_row_keyboard(available_llm_names[.....])
+        reply_markup=make_row_keyboard(available_llm_names)    #??????????????????
     )
 
 
 @router.message(CreatingBot.choosing_bot_name)
 async def add_prompt(message: Message, state: FSMContext):
     await state.update_data(chosen_bot_name=message.text)
-    await message.edit_reply_markup()
     user_data = await state.get_data()
     await message.answer(
         text=f"Вы выбрали имя {user_data['chosen_bot_name']} и языковую модель {user_data['chosen_llm']}.\n"
@@ -72,7 +73,7 @@ async def add_prompt(message: Message, state: FSMContext):
 
 @router.callback_query(CreatingBot.choosing_bot_name, Text("skip"))
 async def skip_name(callback: CallbackQuery, state: FSMContext):
-    await state.update_data(chosen_bot_name=generate(10))
+    await state.update_data(chosen_bot_name=generate(size=10))
     user_data = await state.get_data()
     await callback.message.answer(
         text=f"Имя вашего проекта {user_data['chosen_bot_name']}, языковая модель {user_data['chosen_llm']}.\n"
@@ -86,12 +87,23 @@ async def skip_name(callback: CallbackQuery, state: FSMContext):
 @router.message(CreatingBot.add_system_prompt)
 async def submit_bot(message: Message, state: FSMContext):
     await state.update_data(chosen_prompt=message.text)
-    await message.edit_reply_markup()
     user_data = await state.get_data()
     await message.answer(
         text=f"Ваш промпт: {user_data['chosen_prompt']}.\n",
         reply_markup=make_row_keyboard(submit_options)
     )
+    await state.set_state(CreatingBot.submit_state)
+
+
+@router.callback_query(CreatingBot.add_system_prompt, Text("skip"))
+async def skip_name(callback: CallbackQuery, state: FSMContext):
+    await state.update_data(chosen_prompt="")
+    user_data = await state.get_data()
+    await callback.message.answer(
+        "Промпта не будет",
+        reply_markup=make_row_keyboard(submit_options)
+    )
+    # Сброс состояния и сохранённых данных у пользователя
     await state.set_state(CreatingBot.submit_state)
 
 

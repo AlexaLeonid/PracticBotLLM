@@ -11,10 +11,12 @@ router = Router()
 
 # Эти значения далее будут подставляться в итоговый текст, отсюда
 # такая на первый взгляд странная форма прилагательных
-available_llm_names = ["ChatGPT", "Claude"]
 # status_options = ["ffff", "uuuu", "kkkkk"]
-available_chat_names = ["skip"]
-submit_options = ["submit"]
+
+available_llm_names = [("ChatGPT", "ChatGPT"), ("Claude", "Claude")]
+llm_names = ["ChatGPT", "Claude"]
+available_chat_names = [("skip", "skip")]
+submit_options = [("submit", "submit")]
 
 
 class CreatingChat(StatesGroup):
@@ -29,13 +31,13 @@ async def cmd_food(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup()
     await callback.message.answer(
         text="Создаем новый чат. \n\nВыберите языковую модель:",
-        reply_markup=make_row_keyboard(available_llm_names[.....])
+        reply_markup=make_row_keyboard(available_llm_names)           #??????????????????
     )
     # Устанавливаем пользователю состояние "выбирает название"
     await state.set_state(CreatingChat.choosing_llm_name)
 
 
-@router.callback_query(CreatingChat.choosing_llm_name, Text(available_llm_names))
+@router.callback_query(CreatingChat.choosing_llm_name, Text(llm_names))
 async def food_chosen(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup()
     await state.update_data(chosen_llm=callback.data)
@@ -49,17 +51,15 @@ async def food_chosen(callback: CallbackQuery, state: FSMContext):
 
 @router.message(CreatingChat.choosing_llm_name)
 async def food_chosen_incorrectly(message: Message):
-    await message.edit_reply_markup()
     await message.answer(
         text="Я не знаю такой языковой модели.\n\n"
              "Пожалуйста, выберите одно из названий из списка ниже:",
-        reply_markup=make_row_keyboard(available_llm_names[.....])
+        reply_markup=make_row_keyboard(available_llm_names)             #??????????????????
     )
 
 
 @router.message(CreatingChat.choosing_chat_name)
 async def food_size_chosen(message: Message, state: FSMContext):
-    await message.edit_reply_markup()
     await state.update_data(chosen_name=message.text)
     user_data = await state.get_data()
     await message.answer(
@@ -72,7 +72,7 @@ async def food_size_chosen(message: Message, state: FSMContext):
 @router.callback_query(CreatingChat.choosing_chat_name, Text("skip"))
 async def food_size_chosen(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup()
-    await state.update_data(chosen_chat_name=generate(10))
+    await state.update_data(chosen_chat_name=generate(size=10))
     user_data = await state.get_data()
     await callback.message.answer(
         text=f"Имя вашего проекта {user_data['chosen_chat_name']}, языковая модель {user_data['chosen_llm']}.\n",
