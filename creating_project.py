@@ -3,15 +3,16 @@ from aiogram.filters import Command, Text
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
+from nanoid import generate
 
 from kb import make_row_keyboard, main_menu_kb
-from utils import generate_random_string
+
 
 router = Router()
 
 # Эти значения далее будут подставляться в итоговый текст, отсюда
 # такая на первый взгляд странная форма прилагательных
-available_llm_names = ["ChatGPT", "ulululu", "qwqwq"]
+available_llm_names = ["ChatGPT", "Claude"]
 available_project_names = ["skip"]
 prompt_options = []
 file_options = []
@@ -30,7 +31,7 @@ class CreatingProject(StatesGroup):
 async def add_project(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(
         text="Создаем проект. \n\nВыберите языковую модель:",
-        reply_markup=make_row_keyboard(available_llm_names)
+        reply_markup=make_row_keyboard(available_llm_names[.....])
     )
     # Устанавливаем пользователю состояние "выбирает название"
     await state.set_state(CreatingProject.choosing_llm_name)
@@ -62,7 +63,7 @@ async def wrong_llm(message: Message):
     await message.answer(
         text="Я не знаю такой языковой модели.\n\n"
              "Пожалуйста, выберите одно из названий из списка ниже:",
-        reply_markup=make_row_keyboard(available_llm_names)
+        reply_markup=make_row_keyboard(available_llm_names[.....])
     )
 
 
@@ -80,7 +81,7 @@ async def add_prompt(message: Message, state: FSMContext):
 
 @router.callback_query(CreatingProject.choosing_project_name, Text("skip"))
 async def skip_name(callback: CallbackQuery, state: FSMContext):
-    await state.update_data(chosen_project_name=generate_random_string(8))
+    await state.update_data(chosen_project_name=generate(10))
     user_data = await state.get_data()
     await callback.message.answer(
         text=f"Имя вашего проекта {user_data['chosen_project_name']}, языковая модель {user_data['chosen_llm']}.\n"

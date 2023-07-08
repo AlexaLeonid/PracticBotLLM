@@ -41,14 +41,23 @@ upgrade_menu = [
 upgrade_kb = InlineKeyboardMarkup(inline_keyboard=upgrade_menu)
 
 
-def make_row_keyboard(items: list[str]):
+llm_menu = [
+    [InlineKeyboardButton(text="ChatGPT", callback_data="free"),
+     InlineKeyboardButton(text="basic", callback_data="basic"),
+     InlineKeyboardButton(text="advanced", callback_data="advanced")],
+    [InlineKeyboardButton(text="back", callback_data="back")]
+]
+llm_kb = InlineKeyboardMarkup(inline_keyboard=upgrade_menu)
+
+
+def make_row_keyboard(items: list[str, str]):
     """
     Создаёт реплай-клавиатуру с кнопками в один ряд
     :param items: список текстов для кнопок
     :return: объект реплай-клавиатуры
     """
 
-    row = [[InlineKeyboardButton(text=item, callback_data=item) for item in items],
+    row = [[InlineKeyboardButton(text=item[0], callback_data=item[2]) for item in items],
            [InlineKeyboardButton(text="cancel", callback_data="cancel")]]
 
     return InlineKeyboardMarkup(inline_keyboard=row, resize_keyboard=True)
