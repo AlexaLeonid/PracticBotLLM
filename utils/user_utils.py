@@ -6,7 +6,7 @@ import requests
 def get_user(user_id):
     response = requests.get("http://127.0.0.1:8000/api/v1/telegram/user/", params={"user_id": user_id})
     data = response.json()
-    return data
+    return data["subscription"]["name"], data["token"]["count"], data["default_model"]["name"]
 
 
 def change_model(user_id, model_id):
@@ -16,8 +16,8 @@ def change_model(user_id, model_id):
     return data
 
 
-def change_plan(user_id, plan_id):
-    params = {"user_id": user_id, "plan_id": plan_id}
+def change_plan(user_id, plan):
+    params = {"user_id": user_id, "plan": plan}
     response = requests.put("http://127.0.0.1:8000/api/v1/telegram/user/plan", params=params)
     data = response.json()
     return data

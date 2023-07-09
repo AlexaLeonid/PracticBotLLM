@@ -40,7 +40,7 @@ upgrade_menu = [
 ]
 upgrade_kb = InlineKeyboardMarkup(inline_keyboard=upgrade_menu)
 
-
+"""
 llm_menu = [
     [InlineKeyboardButton(text="ChatGPT", callback_data="free"),
      InlineKeyboardButton(text="basic", callback_data="basic"),
@@ -48,6 +48,7 @@ llm_menu = [
     [InlineKeyboardButton(text="back", callback_data="back")]
 ]
 llm_kb = InlineKeyboardMarkup(inline_keyboard=upgrade_menu)
+"""
 
 
 def make_row_keyboard(items: list[tuple[str, str]]):

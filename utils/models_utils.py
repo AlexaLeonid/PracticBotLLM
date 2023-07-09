@@ -17,7 +17,11 @@ def get_user_models(user_id, offset, limit):
     if response.status_code != 200:
         return "Проблемы "
     data = response.json()
-    return data
+    bots = []
+    for item in data:
+        bots.append((item["name"], item["id"]))
+    return bots
+
 
 """
 def add_user_model(user_id, model_name, base_model_id, prompt):
@@ -29,6 +33,7 @@ def add_user_model(user_id, model_name, base_model_id, prompt):
     data = response.json()
     return data
 """
+
 
 def add_bot(user_id, bot_name, model_id, prompt):
     system_name = generate(size=10)

@@ -13,18 +13,19 @@ import creating_new_chat
 import creating_project
 import show_projects
 import show_chats
-
+import upgrate_handlers
 
 async def main():
     bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
     dp = Dispatcher(storage=MemoryStorage())
-    dp.include_router(handlers.router)
     dp.include_router(admin_handlers.router)
     dp.include_router(creating_custom_bot.router)
     dp.include_router(creating_new_chat.router)
     dp.include_router(creating_project.router)
     dp.include_router(show_projects.router)
     dp.include_router(show_chats.router)
+    dp.include_router(upgrate_handlers.router)
+    dp.include_router(handlers.router)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 

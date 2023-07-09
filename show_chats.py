@@ -59,13 +59,14 @@ async def show_projects(callback: CallbackQuery, state: FSMContext):
     msg_count = chat.get_count_msg(callback.message.chat.id, callback.data)
     print(msg_count)
     c = 0
-    mgs = []
     if c < msg_count:
         mgs = chat.get_conversation(callback.data, c, 10)
+        print(mgs)
         c += 10
-        convo: str
+        convo = ""
         for item in mgs:
-            convo.join("Вы: " + item[0] + "\n").join("Бот: " + item[1] + "\n")
+            convo += "Вы: " + item[0] + "\n\n" + "Бот: " + item[1] + "\n\n"
+        print(convo)
         await callback.message.answer("История чата\n\n" + convo, reply_markup=make_history_keyboard([]))
         await state.set_state(ShowingChats.show_convo, )
         await state.update_data(c=c, msg_count=msg_count)

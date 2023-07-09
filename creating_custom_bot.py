@@ -5,7 +5,7 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from nanoid import generate
 
-from kb import make_row_keyboard
+from kb import make_row_keyboard, main_menu_kb
 
 router = Router()
 
@@ -118,6 +118,7 @@ async def create_bot(callback: CallbackQuery, state: FSMContext):
     chat.add_bot(callback.message.chat.id, data['chosen_bot_name'], data['chosen_llm_id'],
                 data['chosen_prompt'])
     await callback.message.answer(
-        text="Бот создан."
+        text="Бот создан.",
+        reply_markup=main_menu_kb
     )
     await state.clear()

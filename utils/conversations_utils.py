@@ -67,4 +67,3 @@ def add_bot(user_id, bot_name, model_id, prompt):
     data = response.json()
   #  return data
 
-
