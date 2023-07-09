@@ -11,6 +11,8 @@ import admin_handlers
 import creating_custom_bot
 import creating_new_chat
 import creating_project
+import show_projects
+import show_chats
 
 
 async def main():
@@ -21,6 +23,8 @@ async def main():
     dp.include_router(creating_custom_bot.router)
     dp.include_router(creating_new_chat.router)
     dp.include_router(creating_project.router)
+    dp.include_router(show_projects.router)
+    dp.include_router(show_chats.router)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 

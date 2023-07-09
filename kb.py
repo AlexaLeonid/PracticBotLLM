@@ -5,8 +5,8 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardBu
 main_menu = [
     [InlineKeyboardButton(text="🔎 history", callback_data="history"),
      InlineKeyboardButton(text="📝 new chat", callback_data="new_chat")],
-    [InlineKeyboardButton(text="custom bot", callback_data="custom_bot"),
-     InlineKeyboardButton(text="💰 extension", callback_data="extension")],
+    [InlineKeyboardButton(text="create custom bot", callback_data="custom_bot"),
+     InlineKeyboardButton(text="extension", callback_data="extension")],
     [InlineKeyboardButton(text=" settings", callback_data="settings")]
 ]
 main_menu_kb = InlineKeyboardMarkup(inline_keyboard=main_menu)
@@ -63,7 +63,34 @@ def make_row_keyboard(items: list[tuple[str, str]]):
     return InlineKeyboardMarkup(inline_keyboard=row, resize_keyboard=True)
 
 
-def make_history_keyboard(items: list[str]):
+def make_row_keyboard_1(items: list[str]):
+    """
+    Создаёт реплай-клавиатуру с кнопками в один ряд
+    :param items: список текстов для кнопок
+    :return: объект реплай-клавиатуры
+    """
+
+    row = [[InlineKeyboardButton(text=item, callback_data=item) for item in items],
+           [InlineKeyboardButton(text="cancel", callback_data="cancel")]]
+
+    return InlineKeyboardMarkup(inline_keyboard=row, resize_keyboard=True)
+
+
+def make_history_keyboard(items: list[(str, str)]):
+    """
+    Создаёт реплай-клавиатуру с кнопками в один ряд
+    :param items: список текстов для кнопок
+    :return: объект реплай-клавиатуры
+    """
+
+    row = [[InlineKeyboardButton(text=item[0], callback_data=item[1]) for item in items],
+           [InlineKeyboardButton(text="next", callback_data="next")],
+           [InlineKeyboardButton(text="back", callback_data="back")]]
+
+    return InlineKeyboardMarkup(inline_keyboard=row, resize_keyboard=True)
+
+
+def make_history_keyboard_1(items: list[str]):
     """
     Создаёт реплай-клавиатуру с кнопками в один ряд
     :param items: список текстов для кнопок

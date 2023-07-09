@@ -5,12 +5,15 @@ from aiogram.types import Message, InputFile, CallbackQuery, FSInputFile
 
 import kb
 import text
-
+import utils.user_utils as user
+import utils.project_utils as project
 router = Router()
 
 
 @router.message(Command("start"))
 async def start_handler(msg: Message):
+    user.login(msg.from_user.id, msg.from_user.username)
+ #   data = user.get_user(msg.from_user.id)
     await msg.answer(text.greet.format(name=msg.from_user.full_name), reply_markup=kb.main_menu_kb)
 
 
@@ -44,22 +47,11 @@ async def show_upgrade(callback: CallbackQuery):
     await callback.message.answer("Выберите план", reply_markup=kb.upgrade_kb)
 
 
-@router.callback_query(Text("history"))
-async def show_history(callback: CallbackQuery):
-    await callback.message.edit_reply_markup()
-    await callback.message.answer("История запросов", reply_markup=kb.make_history_keyboard([]))
-
-
 @router.callback_query(Text("back"))
 async def back_to_manu(callback: CallbackQuery):
     await callback.message.edit_reply_markup()
     await callback.message.answer("Главное меню для вас", reply_markup=kb.main_menu_kb)
 
-
-@router.callback_query(Text("projects"))
-async def show_projects(callback: CallbackQuery):
-    await callback.message.edit_reply_markup()
-    await callback.message.answer("Ваши проекты")
 
 
 @router.callback_query(Text("cancel"))

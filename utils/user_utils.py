@@ -1,3 +1,5 @@
+import string
+
 import requests
 
 
@@ -21,8 +23,8 @@ def change_plan(user_id, plan_id):
     return data
 
 
-def login(user_id, username):
-    params = {"id": user_id, "username": username}
+def login(user_id: int, username: string):
+    params = {"user_id": user_id, "username": username}
     response = requests.post("http://127.0.0.1:8000/api/v1/telegram/auth/login", params=params)
     if response.status_code != 201:
         return "Проблемы с авторизацией"

@@ -10,34 +10,32 @@ def get_count_msg(user_id, convo_id):
     if response.status_code != 200:
         return "Проблемы "
     data = response.json()
-    count = json.loads(data)["count"]
+    count = data["count"]
     return count
 
 
-def get_conversation(user_id, convo_id, offset, limit):
-    if offset is None:
-        offset = 0
-    if limit is None:
-        offset = 10
-    params = {"user_id": user_id, "convo_id": convo_id, "offset": offset, "limit": limit}
+def get_conversation(convo_id, offset, limit):
+    params = {"convo_id": convo_id, "offset": offset, "limit": limit}
     response = requests.get("http://127.0.0.1:8000/api/v1/telegram/conversation/", params=params)
     if response.status_code != 200:
         return "Проблемы "
     data = response.json()
-    return data
+    msgs = []
+    for item in data:
+        msgs.append((item["content"]["question"], item["content"]["answer"]))
+    return msgs
 
 
 def get_conversations(user_id, offset, limit):
-    if offset is None:
-        offset = 0
-    if limit is None:
-        offset = 10
     params = {"user_id": user_id, "offset": offset, "limit": limit}
     response = requests.get("http://127.0.0.1:8000/api/v1/telegram/conversation/all", params=params)
     if response.status_code != 200:
         return "Проблемы "
     data = response.json()
-    return data
+    chats = []
+    for item in data:
+        chats.append((item["name"], item["id"]))
+    return chats
 
 
 def get_count_conversations(user_id):
@@ -46,7 +44,7 @@ def get_count_conversations(user_id):
     if response.status_code != 200:
         return "Проблемы "
     data = response.json()
-    count = json.loads(data)["count"]
+    count = data["count"]
     return count
 
 

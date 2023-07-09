@@ -8,14 +8,10 @@ def get_count_models(user_id):
     if response.status_code != 200:
         return "Проблемы "
     data = response.json()
-    return data
+    return data["count"]
 
 
 def get_user_models(user_id, offset, limit):
-    if offset is None:
-        offset = 0
-    if limit is None:
-        offset = 10
     params = {"user_id": user_id, "offset": offset, "limit": limit}
     response = requests.get("http://127.0.0.1:8000/api/v1/telegram/models/", params=params)
     if response.status_code != 200:

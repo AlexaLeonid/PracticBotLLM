@@ -5,16 +5,15 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from nanoid import generate
 
-from kb import make_row_keyboard
-
+from kb import make_row_keyboard, main_menu_kb
+import utils.conversations_utils as chat
+import utils.core_utils as core
+import utils.models_utils as model
 router = Router()
 
-# Эти значения далее будут подставляться в итоговый текст, отсюда
-# такая на первый взгляд странная форма прилагательных
-# status_options = ["ffff", "uuuu", "kkkkk"]
 
-available_llm_names = [("ChatGPT", "ChatGPT"), ("Claude", "Claude")]
-llm_names = ["ChatGPT", "Claude"]
+available_llm_names = core.get_models()
+llm_names = [item[1] for item in available_llm_names]
 available_chat_names = [("skip", "skip")]
 submit_options = [("submit", "submit")]
 
@@ -25,22 +24,31 @@ class CreatingChat(StatesGroup):
     submit_state = State()
 
 
-# @router.message(Command("new_chat"))
 @router.callback_query(Text("new_chat"))
 async def cmd_food(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup()
-    await callback.message.answer(
-        text="Создаем новый чат. \n\nВыберите языковую модель:",
-        reply_markup=make_row_keyboard(available_llm_names)           #??????????????????
-    )
-    # Устанавливаем пользователю состояние "выбирает название"
-    await state.set_state(CreatingChat.choosing_llm_name)
+    if model.get_count_models(callback.message.chat.id) > 0:
+        await callback.message.answer(
+            text="Создаем новый чат. \n\nВыберите языковую модель:",
+            reply_markup=make_row_keyboard(available_llm_names)
+        )
+        # Устанавливаем пользователю состояние "выбирает название"
+        await state.set_state(CreatingChat.choosing_llm_name)
+    else:
+        await callback.message.answer(
+            text="Сначала создайте бота:",
+            reply_markup=main_menu_kb  # ??????????????????
+        )
 
 
 @router.callback_query(CreatingChat.choosing_llm_name, Text(llm_names))
 async def food_chosen(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup()
-    await state.update_data(chosen_llm=callback.data)
+    llm_name: str
+    for item in available_llm_names:
+        if str(item[1]) == callback.data:
+            llm_name = item[0]
+    await state.update_data(chosen_llm_id=callback.data, chosen_llm_name=llm_name)
     await callback.message.answer(
         text="Спасибо. Теперь, пожалуйста, введите имя чата (не обязательно)",
         #  reply_markup=make_row_keyboard(available_food_sizes)
@@ -60,7 +68,7 @@ async def food_chosen_incorrectly(message: Message):
 
 @router.message(CreatingChat.choosing_chat_name)
 async def food_size_chosen(message: Message, state: FSMContext):
-    await state.update_data(chosen_name=message.text)
+    await state.update_data(chosen_chat_name=message.text)
     user_data = await state.get_data()
     await message.answer(
         text=f"Вы выбрали для чата имя {user_data['chosen_name']} и языковую модель {user_data['chosen_llm']}.\n",
@@ -75,7 +83,7 @@ async def food_size_chosen(callback: CallbackQuery, state: FSMContext):
     await state.update_data(chosen_chat_name=generate(size=10))
     user_data = await state.get_data()
     await callback.message.answer(
-        text=f"Имя вашего проекта {user_data['chosen_chat_name']}, языковая модель {user_data['chosen_llm']}.\n",
+        text=f"Имя вашего проекта {user_data['chosen_chat_name']}, языковая модель {user_data['chosen_llm_name']}.\n",
         reply_markup=make_row_keyboard(submit_options)
     )
     # Сброс состояния и сохранённых данных у пользователя
@@ -85,6 +93,8 @@ async def food_size_chosen(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(CreatingChat.submit_state, Text("submit"))
 async def food_chosen(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup()
+    data = await state.get_data()
+    chat.add_conversation(callback.message.chat.id, data['chosen_chat_name'], data['chosen_llm_id'])
     await callback.message.answer(
         text="Чат создан.",
     )
