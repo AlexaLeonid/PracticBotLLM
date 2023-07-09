@@ -11,7 +11,7 @@ router = Router()
 
 
 import utils.core_utils as core
-import utils.models_utils as model
+import utils.conversations_utils as chat
 
 available_llm_names = core.get_models()
 llm_names = [item[1] for item in available_llm_names]
@@ -115,8 +115,8 @@ async def skip_name(callback: CallbackQuery, state: FSMContext):
 async def create_bot(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup()
     data = await state.get_data()
-    model.add_user_model(callback.message.chat.id, data['chosen_bot_name'], data['chosen_llm_id'],
-                         data['chosen_prompt'])
+    chat.add_bot(callback.message.chat.id, data['chosen_bot_name'], data['chosen_llm_id'],
+                data['chosen_prompt'])
     await callback.message.answer(
         text="Бот создан."
     )
