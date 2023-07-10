@@ -2,6 +2,9 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardBu
     ReplyKeyboardRemove
 
 
+start_menu = [[KeyboardButton(text="/menu")]]
+menu_kb = ReplyKeyboardMarkup(keyboard=start_menu, resize_keyboard=True)
+
 main_menu = [
     [InlineKeyboardButton(text="🔎 history", callback_data="history"),
      InlineKeyboardButton(text="📝 new chat", callback_data="new_chat")],

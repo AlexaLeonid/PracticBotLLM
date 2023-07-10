@@ -72,11 +72,7 @@ async def send_file(msg: Message, bot: Bot):
 async def ask(msg: Message, bot: Bot):
     if model.get_count_models(msg.chat.id) > 0:
         if chat.get_count_conversations(msg.chat.id) > 0:
-           # await bot.send_chat_action(msg.chat.id, "dfdfd")
             await msg.answer("Запрос обрабатывается...")
-            resp = core.ask(msg.chat.id, msg.text)
-          #  await msg.delete()
-            await bot.delete_message(msg.chat.id, msg.message_id)
             await msg.answer(core.ask(msg.chat.id, msg.text))
         else:
             await msg.answer("Нужно создать чат", reply_markup=kb.main_menu_kb)

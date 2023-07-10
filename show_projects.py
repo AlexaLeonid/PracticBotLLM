@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import CallbackQuery, BufferedInputFile
 
-from kb import make_row_keyboard, make_history_keyboard, make_row_keyboard_1, make_history_keyboard_1
+from kb import make_row_keyboard, make_history_keyboard, menu_kb, main_menu_kb
 import text
 import utils.user_utils as user
 import utils.project_utils as project
@@ -48,14 +48,29 @@ async def skip_name(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer("", reply_markup=make_history_keyboard(projects))
         await state.update_data(c=c)
     else:
-        projects = project.get_user_projects(callback.message.chat.id, c, 10)
+        projects = project.get_user_projects(callback.message.chat.id, c-10, 10)
         await callback.message.answer("Конец списка проектов", reply_markup=make_row_keyboard(projects))
+
+
+@router.callback_query(ShowingProject.show_projects, Text("back"))
+async def skip_name(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    await callback.message.edit_reply_markup()
+    await state.clear()
+    await callback.message.answer("Главное меню", reply_markup=main_menu_kb)
+
+"""
+@router.callback_query(ShowingProject.show_projects)
+async def skip_name(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    await callback.message.edit_reply_markup()
+    await state.clear()
+    await callback.message.answer("Главное меню", reply_markup=main_menu_kb)
+"""
 
 
 @router.callback_query(ShowingProject.show_projects)
 async def skip_name(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await callback.message.edit_reply_markup()
     data, file_name = project.get_user_project(callback.data)
-    await callback.message.answer("Ваш проект:\n")
+    await callback.message.answer("Ваш проект:\n", reply_markup=menu_kb)
     await bot.send_document(chat_id=callback.message.chat.id, document=BufferedInputFile(data, file_name))
     await state.clear()

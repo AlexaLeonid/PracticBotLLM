@@ -29,6 +29,7 @@ async def cmd_food(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup()
     if model.get_count_models(callback.message.chat.id) > 0:
         available_llm_names = model.get_user_models(callback.message.chat.id, 0, 10)
+        print(available_llm_names)
         llm_names = [item[1] for item in available_llm_names]
         print(llm_names)
         await callback.message.answer(
@@ -41,7 +42,7 @@ async def cmd_food(callback: CallbackQuery, state: FSMContext):
     else:
         await callback.message.answer(
             text="Сначала создайте бота:",
-            reply_markup=main_menu_kb  # ??????????????????
+            reply_markup=main_menu_kb
         )
 
 
@@ -51,17 +52,21 @@ async def food_chosen(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     llm_name: str
     print(callback.data)
-    if int(callback.data) in data['llm_names']:
-        for item in data['available_llm_names']:
-            if str(item[1]) == callback.data:
-                llm_name = item[0]
-        await state.update_data(chosen_llm_id=callback.data, chosen_llm_name=llm_name)
-        await callback.message.answer(
-            text="Спасибо. Теперь, пожалуйста, введите имя чата (не обязательно)",
-            #  reply_markup=make_row_keyboard(available_food_sizes)
-            reply_markup=make_row_keyboard(available_chat_names)
-        )
-        await state.set_state(CreatingChat.choosing_chat_name)
+    if callback.data.isdigit():
+        if int(callback.data) in data['llm_names']:
+            for item in data['available_llm_names']:
+                if str(item[1]) == callback.data:
+                    llm_name = item[0]
+            await state.update_data(chosen_llm_id=callback.data, chosen_llm_name=llm_name)
+            await callback.message.answer(
+                text="Спасибо. Теперь, пожалуйста, введите имя чата (не обязательно)",
+                #  reply_markup=make_row_keyboard(available_food_sizes)
+                reply_markup=make_row_keyboard(available_chat_names)
+            )
+            await state.set_state(CreatingChat.choosing_chat_name)
+    else:
+        await state.clear()
+        await callback.message.answer("Отмена", reply_markup=main_menu_kb)
 
 
 @router.message(CreatingChat.choosing_llm_name)
@@ -79,7 +84,7 @@ async def food_size_chosen(message: Message, state: FSMContext):
     await state.update_data(chosen_chat_name=message.text)
     user_data = await state.get_data()
     await message.answer(
-        text=f"Вы выбрали для чата имя {user_data['chosen_chat_name']} и языковую модель {user_data['chosen_llm_name']}.\n",
+        text=f"Вы выбрали для чата имя {user_data['chosen_chat_name']} и пользовательскую модель {user_data['chosen_llm_name']}.\n",
         reply_markup=make_row_keyboard(submit_options)
     )
     await state.set_state(CreatingChat.submit_state)
@@ -105,5 +110,6 @@ async def food_chosen(callback: CallbackQuery, state: FSMContext):
     chat.add_conversation(callback.message.chat.id, data['chosen_chat_name'], data['chosen_llm_id'])
     await callback.message.answer(
         text="Чат создан.",
+        reply_markup=main_menu_kb
     )
     await state.clear()

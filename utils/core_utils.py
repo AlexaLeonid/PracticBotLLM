@@ -4,7 +4,7 @@ import json
 
 def ask(user_id, request):
     params = {"user_id": user_id, "request": request}
-    response = requests.post("http://127.0.0.1:8000/api/v1/core/ask", params=params)
+    response = requests.post("https://manygpt.onrender.com/api/v1/core/ask", params=params)
     if response.status_code != 200:
         return "Проблемы "
     data = response.json()
@@ -13,7 +13,7 @@ def ask(user_id, request):
 
 
 def get_models():
-    response = requests.get("http://127.0.0.1:8000/api/v1/core/base_models")
+    response = requests.get("https://manygpt.onrender.com/api/v1/core/base_models")
     if response.status_code != 200:
         return "Проблемы "
     data = response.json()
@@ -29,7 +29,7 @@ def get_models():
 
 
 def get_tariffs():
-    response = requests.get("http://127.0.0.1:8000/api/v1/telegram/user/plans")
+    response = requests.get("https://manygpt.onrender.com/api/v1/telegram/user/plans")
     if response.status_code != 200:
         return "Проблемы "
     data = response.json()

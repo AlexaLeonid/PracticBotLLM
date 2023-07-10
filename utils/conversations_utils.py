@@ -6,7 +6,7 @@ from nanoid import generate
 
 def get_count_msg(user_id, convo_id):
     params = {"user_id": user_id, "convo_id": convo_id}
-    response = requests.get("http://127.0.0.1:8000/api/v1/telegram/conversation/count", params=params)
+    response = requests.get("https://manygpt.onrender.com/api/v1/telegram/conversation/count", params=params)
     if response.status_code != 200:
         return "Проблемы "
     data = response.json()
@@ -16,7 +16,7 @@ def get_count_msg(user_id, convo_id):
 
 def get_conversation(convo_id, offset, limit):
     params = {"convo_id": convo_id, "offset": offset, "limit": limit}
-    response = requests.get("http://127.0.0.1:8000/api/v1/telegram/conversation/", params=params)
+    response = requests.get("https://manygpt.onrender.com/api/v1/telegram/conversation/", params=params)
     if response.status_code != 200:
         return "Проблемы "
     data = response.json()
@@ -28,7 +28,7 @@ def get_conversation(convo_id, offset, limit):
 
 def get_conversations(user_id, offset, limit):
     params = {"user_id": user_id, "offset": offset, "limit": limit}
-    response = requests.get("http://127.0.0.1:8000/api/v1/telegram/conversation/all", params=params)
+    response = requests.get("https://manygpt.onrender.com/api/v1/telegram/conversation/all", params=params)
     if response.status_code != 200:
         return "Проблемы "
     data = response.json()
@@ -40,7 +40,7 @@ def get_conversations(user_id, offset, limit):
 
 def get_count_conversations(user_id):
     params = {"user_id": user_id}
-    response = requests.get("http://127.0.0.1:8000/api/v1/telegram/conversation/all/count", params=params)
+    response = requests.get("https://manygpt.onrender.com/api/v1/telegram/conversation/all/count", params=params)
     if response.status_code != 200:
         return "Проблемы "
     data = response.json()
@@ -50,7 +50,7 @@ def get_count_conversations(user_id):
 
 def add_conversation(user_id, convo_name, model_id):
     params = {"user_id": user_id, "name": convo_name, "model_id": model_id}
-    response = requests.post("http://127.0.0.1:8000/api/v1/telegram/conversation/new", params=params)
+    response = requests.post("https://manygpt.onrender.com/api/v1/telegram/conversation/new", params=params)
     if response.status_code != 200 or response.status_code != 201:
         return "Проблемы "
     data = response.json()
@@ -61,7 +61,7 @@ def add_bot(user_id, bot_name, model_id, prompt):
     system_name = generate(size=10)
     params = {"user_id": user_id, "name": bot_name, "system_name": system_name,
               "model_id": model_id, "prompt": prompt}
-    response = requests.post("http://127.0.0.1:8000/api/v1/telegram/conversation/new/bot", params=params)
+    response = requests.post("https://manygpt.onrender.com/api/v1/telegram/conversation/new/bot", params=params)
     if response.status_code != 200 or response.status_code != 201:
         return "Проблемы "
     data = response.json()

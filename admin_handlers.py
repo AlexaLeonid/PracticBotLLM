@@ -2,7 +2,7 @@ from aiogram import Router, Bot
 from aiogram.filters import Command, Text, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message, CallbackQuery, FSInputFile
+from aiogram.types import Message, CallbackQuery, FSInputFile, BufferedInputFile
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,15 +18,15 @@ router = Router()
 
 available_tariff_type = get_tariffs()
 tariff_types = [item[0] for item in available_tariff_type]
-available_statistic_type = ["user_statistic", "new_user_statistic"]
-available_time_measure = ["day", "month", "year"]
+available_statistic_type = ["all_users", "user_growth", "user_interactions"]
+#available_time_measure = ["day", "month", "year"]
 available_time_period = []
 submit_options = ["submit"]
 
 
 class CreatingStatistic(StatesGroup):
     choosing_statistic_type = State()
-    choosing_time_measure = State()
+   # choosing_time_measure = State()
     choosing_time_period = State()
     submit_state = State()
 
@@ -41,7 +41,7 @@ async def choose_statistic(callback: CallbackQuery, state: FSMContext):
     else:
         await callback.message.answer("Вы не админ :(")
 
-
+"""
 @router.callback_query(CreatingStatistic.choosing_statistic_type, Text(available_statistic_type))
 async def choose_period_type(callback: CallbackQuery, state: FSMContext):
     await state.update_data(chosen_statistic_type=callback.data)
@@ -52,17 +52,28 @@ async def choose_period_type(callback: CallbackQuery, state: FSMContext):
         reply_markup=kb.make_row_keyboard_1(available_time_measure)
     )
     await state.set_state(CreatingStatistic.choosing_time_measure)
+"""
 
 
-@router.callback_query(CreatingStatistic.choosing_time_measure, Text(available_time_measure))
+@router.callback_query(CreatingStatistic.choosing_statistic_type, Text(available_statistic_type))
 async def choose_period_length(callback: CallbackQuery, state: FSMContext):
-    await state.update_data(chosen_time_mesure=callback.data)
-    await callback.message.edit_reply_markup()
-    user_data = await state.get_data()
-    await callback.message.answer(
-        text="Теперь, пожалуйста, введите длительность периода (число)"
-    )
-    await state.set_state(CreatingStatistic.choosing_time_period)
+    data = await state.get_data()
+    await state.update_data(chosen_statistic_type=callback.data)
+    if callback.data == "all_users":
+        await callback.message.edit_reply_markup()
+        user_data = await state.get_data()
+        await callback.message.answer(
+            text=f"Вы выбрали статистику {user_data['chosen_statistic_type']}",
+            reply_markup=kb.make_row_keyboard_1(submit_options)
+        )
+        await state.set_state(CreatingStatistic.submit_state)
+    else:
+        await callback.message.edit_reply_markup()
+        user_data = await state.get_data()
+        await callback.message.answer(
+            text=f"Вы выбрали статистику {user_data['chosen_statistic_type']}.\nТеперь, пожалуйста, введите длительность периода (число)"
+        )
+        await state.set_state(CreatingStatistic.choosing_time_period)
 
 
 @router.message(CreatingStatistic.choosing_time_period)
@@ -70,15 +81,25 @@ async def submit_statistic(message: Message, state: FSMContext):
     await state.update_data(chosen_time_period=message.text)
     user_data = await state.get_data()
     await message.answer(
-        text=F"Вы выбрали {user_data['chosen_statistic_type']} за {user_data['chosen_time_period']} {user_data['chosen_time_mesure']}(s)",
+        text=F"Вы выбрали {user_data['chosen_statistic_type']} за {user_data['chosen_time_period']} дней(день)",
         reply_markup=kb.make_row_keyboard_1(submit_options)
     )
     await state.set_state(CreatingStatistic.submit_state)
 
 
 @router.callback_query(CreatingStatistic.submit_state, Text("submit"))
-async def create_statistic(callback: CallbackQuery, state: FSMContext):
+async def create_statistic(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await callback.message.edit_reply_markup()
+    data = await state.get_data()
+    if data['chosen_statistic_type'] == "all_users":
+        file_data, file_name = admin.get_all_users()
+        await bot.send_document(chat_id=callback.message.chat.id, document=BufferedInputFile(file_data, file_name))
+    elif data['chosen_statistic_type'] == "user_growth":
+        file_data, file_name = admin.get_user_growth(int(data['chosen_time_period']))
+        await bot.send_document(chat_id=callback.message.chat.id, document=BufferedInputFile(file_data, file_name))
+    elif data['chosen_statistic_type'] == "user_interactions":
+        file_data, file_name = admin.get_user_interaction(int(data['chosen_time_period']))
+        await bot.send_document(chat_id=callback.message.chat.id, document=BufferedInputFile(file_data, file_name))
     await callback.message.answer(
         text="Статистика создана."
     )

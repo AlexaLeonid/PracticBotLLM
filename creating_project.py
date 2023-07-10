@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
 from nanoid import generate
-from kb import make_row_keyboard
+from kb import make_row_keyboard, main_menu_kb
 import utils.project_utils as project
 import utils.core_utils as core
 
@@ -72,7 +72,6 @@ async def wrong_llm(message: Message):
 @router.message(CreatingProject.choosing_project_name)
 async def add_prompt(message: Message, state: FSMContext):
     await state.update_data(chosen_project_name=message.text)
-    await message.edit_reply_markup()
     user_data = await state.get_data()
     await message.answer(
         text=f"Вы выбрали имя {user_data['chosen_project_name']} и языковую модель {user_data['chosen_llm_name']}.\n"
@@ -150,7 +149,8 @@ async def create_project(callback: CallbackQuery, state: FSMContext):
     project.add_user_project(callback.message.chat.id, data['chosen_project_name'], data['mimetype'], data['chosen_llm_id'],
                              data['chosen_prompt'], data['chosen_file'])
     await callback.message.answer(
-        text="Проект создан."
+        text="Проект создан.",
+        reply_markup=main_menu_kb
     )
     await state.clear()
 

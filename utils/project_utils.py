@@ -6,7 +6,7 @@ import json
 def get_count_projects(user_id):
     params = {"user_id": user_id}
     print(user_id)
-    response = requests.get("http://127.0.0.1:8000/api/v1/telegram/project/count", params=params)
+    response = requests.get("https://manygpt.onrender.com/api/v1/telegram/project/count", params=params)
     if response.status_code != 200:
         return "Проблемы "
     data = response.json()
@@ -18,7 +18,7 @@ def get_count_projects(user_id):
 def get_user_projects(user_id, offset, limit):
     print(user_id)
     params = {"user_id": user_id, "offset": offset, "limit": limit}
-    response = requests.get("http://127.0.0.1:8000/api/v1/telegram/project/all", params=params)
+    response = requests.get("https://manygpt.onrender.com/api/v1/telegram/project/all", params=params)
     if response.status_code != 200:
         return "Проблемы "
     data = response.json()
@@ -31,7 +31,7 @@ def get_user_projects(user_id, offset, limit):
 
 def get_user_project(project_id):
     params = {"project_id": project_id}
-    response = requests.get("http://127.0.0.1:8000/api/v1/telegram/project/file", params=params)
+    response = requests.get("https://manygpt.onrender.com/api/v1/telegram/project/file", params=params)
     if response.status_code != 200:
         return "Проблемы "
     data = response.content
@@ -41,7 +41,7 @@ def get_user_project(project_id):
 
 def checking_project_access(user_id):
     params = {"user_id": user_id}
-    response = requests.get("http://127.0.0.1:8000/api/v1/telegram/project/access", params=params)
+    response = requests.get("https://manygpt.onrender.com/api/v1/telegram/project/access", params=params)
     if response.status_code != 200:
         return "Проблемы "
     data = response.json()
@@ -58,7 +58,7 @@ def add_user_project(user_id, project_name, mimetype, model_id, prompt, file):
     params = {"user_id": user_id, "name": project_name, "system_name": system_name, "mimetype": mimetype,
               "model_id": model_id, "prompt": prompt}
     print(file)
-    response = requests.post("http://127.0.0.1:8000/api/v1/telegram/project/new", params=params, files={"file": file})
+    response = requests.post("https://manygpt.onrender.com/api/v1/telegram/project/new", params=params, files={"file": file})
 
     if response.status_code != 200 or response.status_code != 201:
         return "Проблемы "

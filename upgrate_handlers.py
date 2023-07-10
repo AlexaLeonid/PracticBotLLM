@@ -41,6 +41,7 @@ async def show_upgrade(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup()
     if callback.data == "free":
         user.change_plan(callback.message.chat.id, callback.data)
+        await callback.message.answer(f"Тариф free установлен", reply_markup=kb.menu_kb)
     else:
-        await callback.message.answer(f"Для {callback.data } нужна оплата")
+        await callback.message.answer(f"Для {callback.data } нужна оплата", reply_markup=kb.menu_kb)
     await state.clear()

@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import CallbackQuery, BufferedInputFile
 
-from kb import make_row_keyboard, make_history_keyboard, make_row_keyboard_1, make_history_keyboard_1
+from kb import make_row_keyboard, make_history_keyboard, main_menu_kb, make_history_keyboard_1, make_row_keyboard_1
 import text
 import utils.user_utils as user
 import utils.conversations_utils as chat
@@ -40,21 +40,57 @@ async def skip_name(callback: CallbackQuery, state: FSMContext):
     user_data = await state.get_data()
     c = user_data['c']
     p_count = user_data['ch_count']
-    projects = [str]
+    chats = []
     if c < p_count:
-        projects = chat.get_conversations(callback.message.chat.id, c, 10)
+        chats = chat.get_conversations(callback.message.chat.id, c, 10)
         c += 10
-        projects.append("next")
-        await callback.message.answer("", reply_markup=make_history_keyboard_1(projects))
+        chats.append("next")
+        await callback.message.answer("", reply_markup=make_history_keyboard(chats))
         await state.update_data(c=c)
     else:
-        projects = chat.get_conversations(callback.message.chat.id, c, 10)
-        await callback.message.answer("Конец списка чатов", reply_markup=make_history_keyboard_1(projects))
+        chats = chat.get_conversations(callback.message.chat.id, c - 10, 10)
+        await callback.message.answer("Конец списка чатов", reply_markup=make_row_keyboard(chats))
+
+
+@router.callback_query(ShowingChats.show_convo, Text("next"))
+async def skip_name(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_reply_markup()
+    user_data = await state.get_data()
+    c = user_data['c']
+    print(c)
+    msg_count = user_data['msg_count']
+    mgs = [str]
+    if c < msg_count:
+        mgs = chat.get_conversation(user_data['chat_id'], c, 10)
+        c += 10
+        convo = ""
+        for item in mgs:
+            convo += "Вы: " + item[0] + "\n" + "Бот: " + item[1] + "\n"
+        await callback.message.answer(convo, reply_markup=make_history_keyboard([]))
+        await state.set_state(ShowingChats.show_convo, )
+        await state.update_data(c=c, msg_count=msg_count)
+    else:
+        await callback.message.answer("Конец истории чата\n\n", reply_markup=make_row_keyboard([]))
+
+
+@router.callback_query(ShowingChats.show_chats, Text("back"))
+async def skip_name(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    await callback.message.edit_reply_markup()
+    await state.clear()
+    await callback.message.answer("Главное меню", reply_markup=main_menu_kb)
+
+
+@router.callback_query(ShowingChats.show_chats, Text("cancel"))
+async def skip_name(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    await callback.message.edit_reply_markup()
+    await state.clear()
+    await callback.message.answer("Главное меню", reply_markup=main_menu_kb)
 
 
 @router.callback_query(ShowingChats.show_chats)
 async def show_projects(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup()
+
     await state.update_data(chat_id=callback.data)
     msg_count = chat.get_count_msg(callback.message.chat.id, callback.data)
     print(msg_count)
@@ -66,28 +102,7 @@ async def show_projects(callback: CallbackQuery, state: FSMContext):
         convo = ""
         for item in mgs:
             convo += "Вы: " + item[0] + "\n\n" + "Бот: " + item[1] + "\n\n"
-        print(convo)
         await callback.message.answer("История чата\n\n" + convo, reply_markup=make_history_keyboard([]))
-        await state.set_state(ShowingChats.show_convo, )
-        await state.update_data(c=c, msg_count=msg_count)
-    else:
-        await callback.message.answer("Конец истории чата\n\n", reply_markup=make_row_keyboard([]))
-
-
-@router.callback_query(ShowingChats.show_convo, Text("next"))
-async def skip_name(callback: CallbackQuery, state: FSMContext):
-    await callback.message.edit_reply_markup()
-    user_data = await state.get_data()
-    c = user_data['c']
-    msg_count = user_data['msg_count']
-    mgs = [str]
-    if c < msg_count:
-        mgs = chat.get_conversation(callback.data, c, 10)
-        c += 10
-        convo: str
-        for item in mgs:
-            convo.join("Вы: " + item[0] + "\n").join("Бот: " + item[1] + "\n")
-        await callback.message.answer(convo, reply_markup=make_history_keyboard([]))
         await state.set_state(ShowingChats.show_convo, )
         await state.update_data(c=c, msg_count=msg_count)
     else:
